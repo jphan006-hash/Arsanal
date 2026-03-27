@@ -188,3 +188,33 @@ function animate(){
   update();
   renderer.render(scene,camera);
 }
+
+function useAbility(p){
+  if(p.abilityCooldown > 0) return;
+
+  p.abilityActive = true;
+  p.abilityCooldown = 300;
+
+  // Random ability
+  let ability = Math.floor(Math.random()*3);
+
+  let user = players.find(p=>p.isUser);
+
+if(keys["w"]) user.mesh.position.z -= user.speed;
+if(keys["s"]) user.mesh.position.z += user.speed;
+if(keys["a"]) user.mesh.position.x -= user.speed;
+if(keys["d"]) user.mesh.position.x += user.speed;
+ 
+
+  if(ability === 1){
+    // RAPID FIRE
+    p.rapid = true;
+    setTimeout(()=>{ p.rapid=false; p.abilityActive=false; },3000);
+  }
+
+  if(ability === 2){
+    // HEAL
+    p.hp = Math.min(100, p.hp + 30);
+    p.abilityActive = false;
+  }
+}
