@@ -1,114 +1,189 @@
-// Player (duck cube)
-const geo = new THREE.BoxGeometry(1,1,1);
-const mat = new THREE.MeshStandardMaterial({color:0xffff00});
-player = new THREE.Mesh(geo, mat);
-scene.add(player);
+let scene, camera, renderer;
+let player, bullets = [], enemies = [];
+let keys = {};
 
-// Weapon system
+let hp = 100;
+let kills = 0;
+let level = 1;
+
+let weaponMesh;
 const weaponTypes = ["pistol","shotgun","rifle"];
 let currentWeapon = 0;
 
-function createWeapon(type){
-  let weapon;
+let lake; // FIXED (global so animation works)
 
-  if(type === "pistol"){
-    weapon = new THREE.Mesh(
-      new THREE.BoxGeometry(0.5,0.2,1),
-      new THREE.MeshStandardMaterial({color:0x333333})
-    );
-  }
+document.getElementById("startBtn").onclick = startGame;
 
-  if(type === "shotgun"){
-    weapon = new THREE.Mesh(
-      new THREE.BoxGeometry(0.7,0.3,2),
-      new THREE.MeshStandardMaterial({color:0x884422})
-    );
-  }
+function startGame(){
+  document.getElementById("menu").style.display = "none";
+  document.getElementById("hud").style.display = "block";
 
-  if(type === "rifle"){
-    weapon = new THREE.Mesh(
-      new THREE.BoxGeometry(0.4,0.2,2.5),
-      new THREE.MeshStandardMaterial({color:0x222222})
-    );
-  }
-
-  weapon.position.set(0.8,0,0); // right side of duck
-  return weapon;
+  init();
+  animate();
 }
 
-let weaponMesh = createWeapon(weaponTypes[currentWeapon]);
-player.add(weaponMesh);
+function init(){
+  scene = new THREE.Scene();
+  scene.background = new THREE.Color(0x87ceeb);
 
+  camera = new THREE.PerspectiveCamera(75, window.innerWidth/window.innerHeight, 0.1, 1000);
+  camera.position.z = 5;
 
-function shoot(){
-  if(weaponTypes[currentWeapon] === "pistol"){
-    spawnBullet(0, -1, 10);
-  }
+  renderer = new THREE.WebGLRenderer();
+  renderer.setSize(window.innerWidth, window.innerHeight);
+  document.body.appendChild(renderer.domElement);
 
-  if(weaponTypes[currentWeapon] === "shotgun"){
-    for(let i=-2;i<=2;i++){
-      spawnBullet(i * 0.1, -1, 6);
-    }
-  }
+  // Light
+  const light = new THREE.DirectionalLight(0xffffff,1);
+  light.position.set(5,10,5);
+  scene.add(light);
 
-  if(weaponTypes[currentWeapon] === "rifle"){
-    spawnBullet(0, -2, 20);
-  }
+  // 🌱 Ground
+  const ground = new THREE.Mesh(
+    new THREE.PlaneGeometry(200,200),
+    new THREE.MeshStandardMaterial({color:0x228B22})
+  );
+  ground.rotation.x = -Math.PI/2;
+  ground.position.y = -1;
+  scene.add(ground);
+
+  // 💧 Lake
+  lake = new THREE.Mesh(
+    new THREE.CircleGeometry(10,32),
+    new THREE.MeshStandardMaterial({color:0x1e90ff})
+  );
+  lake.rotation.x = -Math.PI/2;
+  lake.position.set(0,-0.9,-10);
+  scene.add(lake);
+
+  // 🦆 Player
+  player = new THREE.Mesh(
+    new THREE.BoxGeometry(1,1,1),
+    new THREE.MeshStandardMaterial({color:0xffff00})
+  );
+  scene.add(player);
+
+  addWeapon();
+
+  spawnEnemies(5);
+
+  window.addEventListener("keydown", e=>keys[e.key]=true);
+  window.addEventListener("keyup", e=>keys[e.key]=false);
+  window.addEventListener("click", shoot);
 }
 
-function spawnBullet(xSpread, zSpeed, damage){
-  let geo = new THREE.SphereGeometry(0.2);
-  let mat = new THREE.MeshBasicMaterial({color:0xffffff});
-  let bullet = new THREE.Mesh(geo, mat);
+function addWeapon(){
+  if(weaponMesh) player.remove(weaponMesh);
 
-  bullet.position.copy(player.position);
-  bullet.velocity = new THREE.Vector3(xSpread,0,zSpeed);
-  bullet.damage = damage;
+  let size = currentWeapon === 0 ? 1 : currentWeapon === 1 ? 1.5 : 2;
 
-  scene.add(bullet);
-  bullets.push(bullet);
-}
-
-
-// Sky color
-scene.background = new THREE.Color(0x87ceeb); // light blue sky
-
-// Grass ground
-const groundGeo = new THREE.PlaneGeometry(200, 200);
-const groundMat = new THREE.MeshStandardMaterial({ color: 0x228B22 }); // green
-const ground = new THREE.Mesh(groundGeo, groundMat);
-
-ground.rotation.x = -Math.PI / 2; // make it flat
-ground.position.y = -1;
-scene.add(ground);
-
-// Lake (blue area)
-const lakeGeo = new THREE.CircleGeometry(10, 32);
-const lakeMat = new THREE.MeshStandardMaterial({ 
-  color: 0x1e90ff,
-  transparent: true,
-  opacity: 0.8
-});
-
-const lake = new THREE.Mesh(lakeGeo, lakeMat);
-lake.rotation.x = -Math.PI / 2;
-lake.position.set(0, -0.9, -10); // slightly above ground
-scene.add(lake);
-
-if(typeof lake !== "undefined"){
-  lake.rotation.z += 0.001; // subtle movement
-}
-
-for(let i=0;i<50;i++){
-  let geo = new THREE.BoxGeometry(1, Math.random()*2 + 1, 1);
-  let mat = new THREE.MeshStandardMaterial({color: 0x2ecc71});
-  let grass = new THREE.Mesh(geo, mat);
-
-  grass.position.set(
-    Math.random()*100 - 50,
-    0,
-    Math.random()*100 - 50
+  weaponMesh = new THREE.Mesh(
+    new THREE.BoxGeometry(0.3,0.3,size),
+    new THREE.MeshStandardMaterial({color:0x333333})
   );
 
-  scene.add(grass);
+  weaponMesh.position.set(0.8,0,0);
+  player.add(weaponMesh);
+}
+
+function shoot(){
+  if(currentWeapon === 0) spawnBullet(0,-1,10);
+
+  if(currentWeapon === 1){
+    for(let i=-2;i<=2;i++) spawnBullet(i*0.1,-1,6);
+  }
+
+  if(currentWeapon === 2) spawnBullet(0,-2,20);
+}
+
+function spawnBullet(x,z,damage){
+  let b = new THREE.Mesh(
+    new THREE.SphereGeometry(0.2),
+    new THREE.MeshBasicMaterial({color:0xffffff})
+  );
+
+  b.position.copy(player.position);
+  b.velocity = new THREE.Vector3(x,0,z);
+  b.damage = damage;
+
+  scene.add(b);
+  bullets.push(b);
+}
+
+function spawnEnemies(n){
+  for(let i=0;i<n;i++){
+    let e = new THREE.Mesh(
+      new THREE.BoxGeometry(1,1,1),
+      new THREE.MeshStandardMaterial({color:0xff0000})
+    );
+
+    e.position.set(Math.random()*20-10,0,Math.random()*-20);
+    e.hp = 20;
+
+    scene.add(e);
+    enemies.push(e);
+  }
+}
+
+function update(){
+  if(keys["w"]) player.position.z -= 0.2;
+  if(keys["s"]) player.position.z += 0.2;
+  if(keys["a"]) player.position.x -= 0.2;
+  if(keys["d"]) player.position.x += 0.2;
+
+  bullets.forEach((b,i)=>{
+    b.position.add(b.velocity);
+
+    enemies.forEach((e,ei)=>{
+      if(b.position.distanceTo(e.position) < 1){
+        e.hp -= b.damage;
+
+        scene.remove(b);
+        bullets.splice(i,1);
+
+        if(e.hp <= 0){
+          scene.remove(e);
+          enemies.splice(ei,1);
+          kills++;
+
+          if(kills % 5 === 0){
+            level++;
+            currentWeapon = level % 3;
+            addWeapon();
+          }
+        }
+      }
+    });
+  });
+
+  enemies.forEach(e=>{
+    let dir = new THREE.Vector3().subVectors(player.position,e.position).normalize();
+    e.position.add(dir.multiplyScalar(0.03));
+
+    if(e.position.distanceTo(player.position)<1){
+      hp -= 5;
+    }
+  });
+
+  if(enemies.length === 0){
+    spawnEnemies(5 + level);
+  }
+
+  // animate lake
+  if(lake) lake.rotation.z += 0.001;
+
+  document.getElementById("hp").textContent = hp;
+  document.getElementById("kills").textContent = kills;
+  document.getElementById("level").textContent = level;
+
+  if(hp <= 0){
+    alert("Game Over");
+    location.reload();
+  }
+}
+
+function animate(){
+  requestAnimationFrame(animate);
+  update();
+  renderer.render(scene,camera);
 }
