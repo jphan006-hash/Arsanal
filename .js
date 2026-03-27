@@ -1,3 +1,4 @@
+let boss = null;
 let players = [4];
 let scene, camera, renderer;
 let player, bullets = [], enemies = [];
@@ -73,15 +74,17 @@ function init(){
   window.addEventListener("click", shoot);
 }
 
-function addWeapon(){
-  if(weaponMesh) player.remove(weaponMesh);
+const weapons = [
+  {name:"Pistol", damage:10},
+  {name:"Shotgun", damage:6},
+  {name:"Rifle", damage:20},
+  {name:"Sniper", damage:50},
+  {name:"Blaster", damage:15}
+];
 
-  let size = currentWeapon === 0 ? 1 : currentWeapon === 1 ? 1.5 : 2;
-
-  weaponMesh = new THREE.Mesh(
-    new THREE.BoxGeometry(0.3,0.3,size),
-    new THREE.MeshStandardMaterial({color:0x333333})
-  );
+function getWeapon(level){
+  return weapons[Math.floor(level / 5) % weapons.length];
+}
 
   weaponMesh.position.set(0.8,0,0);
   player.add(weaponMesh);
@@ -97,11 +100,16 @@ function shoot(){
   }
 }
 
-function spawnBullet(x,z,damage){
-  let b = new THREE.Mesh(
-    new THREE.SphereGeometry(0.2),
-    new THREE.MeshBasicMaterial({color:0xffffff})
-  );
+function shoot(){
+  let user = players.find(p=>p.isUser);
+  let weapon = getWeapon(user.level);
+
+  let shots = user.rapid ? 3 : 1;
+
+  for(let i=0;i<shots;i++){
+    spawnBullet((Math.random()-0.5)*0.2,-1,weapon.damage);
+  }
+}
 
   b.position.copy(player.position);
   b.velocity = new THREE.Vector3(x,0,z);
@@ -242,3 +250,48 @@ function updatePlayersUI(){
   });
 }
 updatePlayersUI();
+
+
+function spawnBoss(){
+  boss = new THREE.Mesh(
+    new THREE.BoxGeometry(6,6,6),
+    new THREE.MeshStandardMaterial({color:0x00ff00})
+  );
+let user = players.find(p=>p.isUser);
+
+if(user.level === 80 && !boss){
+  spawnBoss();
+}
+id: Math.random().toString(36).substr(2,9),
+  
+if(boss){
+  let dir = new THREE.Vector3().subVectors(user.mesh.position, boss.position).normalize();
+  boss.position.add(dir.multiplyScalar(0.02));
+
+  if(boss.position.distanceTo(user.mesh.position) < 3){
+    user.hp -= 10; // boss stronger
+  }
+} 
+  boss.position.set(0,0,-30);
+  boss.hp = 10000;
+
+  scene.add(boss);
+}
+if(boss && b.position.distanceTo(boss.position) < 3){
+  boss.hp -= b.damage;
+
+  if(boss.hp <= 0){
+    alert("👑 KING DUCK DEFEATED!");
+    location.reload();
+  }
+}
+updateStarPlayer();
+<b>Duck ${i+1} ${p === starPlayer ? "⭐" : ""}</b>
+function checkLastPlayer(){
+  let alive = players.filter(p=>p.hp > 0);
+checkLastPlayer();
+  if(alive.length === 1){
+    alert("🏆 Duck " + (players.indexOf(alive[0])+1) + " WINS!");
+    location.reload();
+  }
+}
