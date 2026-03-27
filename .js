@@ -218,3 +218,27 @@ if(keys["d"]) user.mesh.position.x += user.speed;
     p.abilityActive = false;
   }
 }
+
+function updatePlayersUI(){
+  let container = document.getElementById("playersUI");
+  container.innerHTML = "";
+
+  players.forEach((p,i)=>{
+    let div = document.createElement("div");
+    div.className = "playerCard";
+
+    if(p.abilityActive) div.classList.add("activeAbility");
+
+    div.innerHTML = `
+      <b>Duck ${i+1}</b><br>
+      HP: ${p.hp}<br>
+      LVL: ${p.level}
+      <div class="abilityBar">
+        <div class="abilityFill" style="width:${(p.abilityCooldown/300)*100}%"></div>
+      </div>
+    `;
+
+    container.appendChild(div);
+  });
+}
+updatePlayersUI();
