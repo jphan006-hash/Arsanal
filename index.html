@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>2D Blocky Arsenal</title>
+    <style>
+        body { margin: 0; overflow: hidden; background: #222; color: white; font-family: Arial; }
+        canvas { display: block; background: #333; }
+        #ui { position: absolute; top: 10px; left: 10px; pointer-events: none; }
+    </style>
+</head>
+<body>
+    <div id="ui">
+        <h2>2D Arsenal</h2>
+        <p>Weapon: <span id="weapon">Pistol</span></p>
+        <p>Kills: <span id="kills">0</span></p>
+    </div>
+    <canvas id="gameCanvas"></canvas>
+
+<script>
+const canvas = document.getElementById('gameCanvas');
+const ctx = canvas.getContext('2d');
+const uiKills = document.getElementById('kills');
+const uiWeapon = document.getElementById('weapon');
+
+canvas.width = window.innerWidth;
+canvas.height = window.innerHeight;
+
+// Game State
+let kills = 0;
+let player = { x: 100, y: 100, w: 40, h: 40, color: '#0095DD', speed: 5, vY: 0, jumping: false };
+let bullets = [];
+let enemies = [];
+let keys = {};
+const gravity = 0.8;
+const weapons = ["Pistol", "Shotgun", "Rifle"];
+let currentWeaponIdx = 0;
+
+// Input Handling
+window.addEventListener('keydown', e => keys[e.key] = true);
+window.addEventListener('keyup', e => keys[e.key] = false);
+window.addEventListener('click', shoot);
+
+function shoot() {
+    bullets.push({
+        x: player.x + player.w / 2,
+        y: player.y + player.h / 2,
+        size: 5,
+        velX: (mouseX - (player.x + player.w/2)) * 0.05,
+        velY: (mouseY - (player.y + player.h/2)) * 0.05
+    });
+}
+
+let mouseX = 0, mouseY = 0;
+window.addEventListener('mousemove', e => {
+    mouseX = e.clientX;
+    mouseY = e.clientY;
+});
+
+// Spawn Enemies
+function spawnEnemy() {
+    enemies.push({
+        x: Math.random() * canvas.width,
+        y: Math.random() * (canvas.height - 100),
+        w: 40, h: 40, color: '#FF4136', health: 1
+    });
+}
+setInterval(spawnEnemy, 2000);
+
+// Game Loop
+function update() {
+    // Player Movement
+    if (keys['w'] && !player.jumping) { player.vY = -15; player.jumping = true; }
+    if (keys['a']) player.x -= player.speed;
+    if (keys['d']) player.x += player.speed;
+    
+    player.vY += gravity;
+    player.y += player.vY;
+
+    // Ground Collision
+    if (player.y > canvas.height - 100) {
+        player.y = canvas.height - 100;
+        player.jumping = false;
+        player.vY = 0;
+    }
+
+    // Bullet Logic
+    bullets.forEach((b, i) => {
+        b.x += b.velX;
+        b.y += b.velY;
+        if (b.x < 0 || b.x > canvas.width || b.y < 0 || b.y > canvas.height) bullets.splice(i, 1);
+    });
+
+    // Enemy AI & Collision
+    enemies.forEach((e, ei) => {
+        // Move towards player
+        if (e.x < player.x) e.x += 1; else e.x -= 1;
+        
+        bullets.forEach((b, bi) => {
+            if (b.x > e.x && b.x < e.x + e.w && b.y > e.y && b.y < e.y + e.h) {
+                enemies.splice(ei, 1);
+                bullets.splice(bi, 1);
+                kills++;
+                uiKills.innerText = kills;
+                // Switch Weapon
+                if(kills % 3 === 0) currentWeaponIdx = (currentWeaponIdx + 1) % weapons.length;
+                uiWeapon.innerText = weapons[currentWeaponIdx];
+            }
+        });
+    });
+
+    draw();
+    requestAnimationFrame(update);
+}
+
+function draw() {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    
+    // Draw Ground
+    ctx.fillStyle = '#555';
+    ctx.fillRect(0, canvas.height - 60, canvas.width, 60);
+
+    // Draw Player (Blocky)
+    ctx.fillStyle = player.color;
+    ctx.fillRect(player.x, player.y, player.w, player.h);
+    // Eye to show direction
+    ctx.fillStyle = 'white';
+    ctx.fillRect(player.x + 25, player.y + 10, 10, 10);
+
+    // Draw Bullets
+    ctx.fillStyle = 'yellow';
+    bullets.forEach(b => ctx.fillRect(b.x, b.y, b.size, b.size));
+
+    // Draw Enemies
+    enemies.forEach(e => {
+        ctx.fillStyle = e.color;
+        ctx.fillRect(e.x, e.y, e.w, e.h);
+    });
+}
+
+update();
+</script>
+</body>
+</html>
