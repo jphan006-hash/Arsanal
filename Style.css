@@ -1,66 +1,34 @@
-/* Reset */
-* {
-  margin: 0;
-  padding: 0;
-  box-sizing: border-box;
-  font-family: Arial, sans-serif;
-}
-
 body {
+  margin: 0;
   overflow: hidden;
-  background: linear-gradient(to bottom, #111, #222);
+  background: #111;
   color: white;
+  font-family: Arial;
 }
 
-/* Start Menu */
 #menu {
   position: absolute;
   top: 50%;
   left: 50%;
-  transform: translate(-50%, -50%);
+  transform: translate(-50%,-50%);
   text-align: center;
 }
 
-#menu h1 {
-  font-size: 50px;
-  margin-bottom: 20px;
-  color: #ffeb3b;
-  text-shadow: 0 0 20px rgba(255,255,0,0.7);
-}
-
 button {
-  padding: 15px 35px;
-  font-size: 22px;
-  border: none;
-  border-radius: 10px;
-  background: linear-gradient(45deg, #ff9800, #ff5722);
-  color: white;
+  padding: 15px 30px;
+  font-size: 20px;
   cursor: pointer;
-  transition: 0.2s;
 }
 
-button:hover {
-  transform: scale(1.1);
-  box-shadow: 0 0 15px rgba(255, 87, 34, 0.8);
-}
-
-/* HUD */
 #hud {
   position: absolute;
   top: 10px;
   left: 10px;
   background: rgba(0,0,0,0.5);
-  padding: 15px;
+  padding: 10px;
   border-radius: 10px;
-  backdrop-filter: blur(5px);
 }
 
-#hud p {
-  margin: 5px 0;
-  font-size: 16px;
-}
-
-/* Crosshair */
 #crosshair {
   position: absolute;
   top: 50%;
@@ -87,26 +55,4 @@ button:hover {
   width: 20px;
   height: 2px;
   top: 9px;
-}
-
-/* Health warning */
-.low-health {
-  color: red;
-  font-weight: bold;
-}
-
-/* Boss health bar */
-#bossBar {
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 25px;
-  background: #222;
-}
-
-#bossHealth {
-  height: 100%;
-  width: 100%;
-  background: linear-gradient(to right, red, darkred);
 }
