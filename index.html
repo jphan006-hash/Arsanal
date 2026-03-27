@@ -1,143 +1,107 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-    <title>2D Blocky Arsenal</title>
+    <meta charset="UTF-8">
+    <title>Duck Arsenal 3D</title>
     <style>
-        body { margin: 0; overflow: hidden; background: #222; color: white; font-family: Arial; }
-        canvas { display: block; background: #333; }
-        #ui { position: absolute; top: 10px; left: 10px; pointer-events: none; }
+        body { margin: 0; overflow: hidden; font-family: 'Arial', sans-serif; }
+        canvas { display: block; }
+        #ui, #startScreen { position: absolute; top: 0; left: 0; width: 100%; height: 100%; }
+        #startScreen { background: rgba(0,0,0,0.8); color: white; display: flex; flex-direction: column; justify-content: center; align-items: center; z-index: 100; }
+        button { padding: 20px 40px; font-size: 24px; cursor: pointer; background: #FFD700; border: none; border-radius: 10px; }
+        #hud { position: absolute; top: 10px; left: 10px; color: white; pointer-events: none; display: none; }
+        .boss-health { width: 300px; height: 20px; background: red; position: absolute; top: 10px; left: 50%; transform: translateX(-50%); display: none; }
     </style>
 </head>
 <body>
-    <div id="ui">
-        <h2>2D Arsenal</h2>
-        <p>Weapon: <span id="weapon">Pistol</span></p>
-        <p>Kills: <span id="kills">0</span></p>
+    <div id="startScreen">
+        <h1>DUCK ARSENAL 3D</h1>
+        <div style="font-size: 100px;">🦆</div>
+        <button onclick="startGame()">START GAME</button>
     </div>
+    <div id="hud">
+        <p>Level: <span id="level">1</span>/80</p>
+        <p>Health: <span id="health">100</span></p>
+    </div>
+    <div id="bossBar" class="boss-health"></div>
     <canvas id="gameCanvas"></canvas>
 
-<script>
-const canvas = document.getElementById('gameCanvas');
-const ctx = canvas.getContext('2d');
-const uiKills = document.getElementById('kills');
-const uiWeapon = document.getElementById('weapon');
+    <script src="https://cloudflare.com"></script>
+    <script>
+        let scene, camera, renderer, player, enemies = [];
+        let isStarted = false;
+        let health = 100;
+        let level = 1;
 
-canvas.width = window.innerWidth;
-canvas.height = window.innerHeight;
+        function startGame() {
+            document.getElementById('startScreen').style.display = 'none';
+            document.getElementById('hud').style.display = 'block';
+            isStarted = true;
+            init3D();
+            animate();
+        }
 
-// Game State
-let kills = 0;
-let player = { x: 100, y: 100, w: 40, h: 40, color: '#0095DD', speed: 5, vY: 0, jumping: false };
-let bullets = [];
-let enemies = [];
-let keys = {};
-const gravity = 0.8;
-const weapons = ["Pistol", "Shotgun", "Rifle"];
-let currentWeaponIdx = 0;
+        function init3D() {
+            scene = new THREE.Scene();
+            scene.background = new THREE.Color(0x87CEEB);
+            camera = new THREE.PerspectiveCamera(75, window.innerWidth/window.innerHeight, 0.1, 1000);
+            renderer = new THREE.WebGLRenderer({canvas: document.getElementById('gameCanvas')});
+            renderer.setSize(window.innerWidth, window.innerHeight);
 
-// Input Handling
-window.addEventListener('keydown', e => keys[e.key] = true);
-window.addEventListener('keyup', e => keys[e.key] = false);
-window.addEventListener('click', shoot);
+            // Ground
+            const ground = new THREE.Mesh(
+                new THREE.PlaneGeometry(100, 100),
+                new THREE.MeshBasicMaterial({color: 0x228B22})
+            );
+            ground.rotation.x = -Math.PI / 2;
+            scene.add(ground);
 
-function shoot() {
-    bullets.push({
-        x: player.x + player.w / 2,
-        y: player.y + player.h / 2,
-        size: 5,
-        velX: (mouseX - (player.x + player.w/2)) * 0.05,
-        velY: (mouseY - (player.y + player.h/2)) * 0.05
-    });
-}
+            // Player Avatar (Simple Yellow Duck)
+            const geometry = new THREE.BoxGeometry(1, 1, 1);
+            const material = new THREE.MeshBasicMaterial({color: 0xFFD700});
+            player = new THREE.Mesh(geometry, material);
+            player.position.y = 0.5;
+            scene.add(player);
 
-let mouseX = 0, mouseY = 0;
-window.addEventListener('mousemove', e => {
-    mouseX = e.clientX;
-    mouseY = e.clientY;
-});
+            camera.position.z = 5;
+            camera.position.y = 2;
+        }
 
-// Spawn Enemies
-function spawnEnemy() {
-    enemies.push({
-        x: Math.random() * canvas.width,
-        y: Math.random() * (canvas.height - 100),
-        w: 40, h: 40, color: '#FF4136', health: 1
-    });
-}
-setInterval(spawnEnemy, 2000);
-
-// Game Loop
-function update() {
-    // Player Movement
-    if (keys['w'] && !player.jumping) { player.vY = -15; player.jumping = true; }
-    if (keys['a']) player.x -= player.speed;
-    if (keys['d']) player.x += player.speed;
-    
-    player.vY += gravity;
-    player.y += player.vY;
-
-    // Ground Collision
-    if (player.y > canvas.height - 100) {
-        player.y = canvas.height - 100;
-        player.jumping = false;
-        player.vY = 0;
-    }
-
-    // Bullet Logic
-    bullets.forEach((b, i) => {
-        b.x += b.velX;
-        b.y += b.velY;
-        if (b.x < 0 || b.x > canvas.width || b.y < 0 || b.y > canvas.height) bullets.splice(i, 1);
-    });
-
-    // Enemy AI & Collision
-    enemies.forEach((e, ei) => {
-        // Move towards player
-        if (e.x < player.x) e.x += 1; else e.x -= 1;
-        
-        bullets.forEach((b, bi) => {
-            if (b.x > e.x && b.x < e.x + e.w && b.y > e.y && b.y < e.y + e.h) {
-                enemies.splice(ei, 1);
-                bullets.splice(bi, 1);
-                kills++;
-                uiKills.innerText = kills;
-                // Switch Weapon
-                if(kills % 3 === 0) currentWeaponIdx = (currentWeaponIdx + 1) % weapons.length;
-                uiWeapon.innerText = weapons[currentWeaponIdx];
+        function spawnEnemy() {
+            const geo = new THREE.BoxGeometry(1, 1, 1);
+            const mat = new THREE.MeshBasicMaterial({color: 0xFF4500});
+            const enemy = new THREE.Mesh(geo, mat);
+            enemy.position.set(Math.random()*20-10, 0.5, Math.random()*20-10);
+            enemy.health = (level >= 80) ? 10000 : 20; // 10k Health for King Duck
+            if(level >= 80) {
+                enemy.scale.set(3,3,3); // Big Boss
+                document.getElementById('bossBar').style.display = 'block';
             }
-        });
-    });
+            scene.add(enemy);
+            enemies.push(enemy);
+        }
 
-    draw();
-    requestAnimationFrame(update);
-}
+        function animate() {
+            if (!isStarted) return;
+            requestAnimationFrame(animate);
+            
+            // Basic Enemy Movement & Damage
+            enemies.forEach(e => {
+                e.position.x += (player.position.x - e.position.x) * 0.01;
+                e.position.z += (player.position.z - e.position.z) * 0.01;
+                
+                // Damage player
+                if(e.position.distanceTo(player.position) < 1) {
+                    health -= 0.1; // Rapid damage
+                    document.getElementById('health').innerText = Math.floor(health);
+                }
+            });
 
-function draw() {
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
-    
-    // Draw Ground
-    ctx.fillStyle = '#555';
-    ctx.fillRect(0, canvas.height - 60, canvas.width, 60);
+            renderer.render(scene, camera);
+        }
 
-    // Draw Player (Blocky)
-    ctx.fillStyle = player.color;
-    ctx.fillRect(player.x, player.y, player.w, player.h);
-    // Eye to show direction
-    ctx.fillStyle = 'white';
-    ctx.fillRect(player.x + 25, player.y + 10, 10, 10);
-
-    // Draw Bullets
-    ctx.fillStyle = 'yellow';
-    bullets.forEach(b => ctx.fillRect(b.x, b.y, b.size, b.size));
-
-    // Draw Enemies
-    enemies.forEach(e => {
-        ctx.fillStyle = e.color;
-        ctx.fillRect(e.x, e.y, e.w, e.h);
-    });
-}
-
-update();
-</script>
+        // Add 80 levels logic, Multiplayer socket emission, etc.
+        // This requires a back-end server.
+    </script>
 </body>
 </html>
