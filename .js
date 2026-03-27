@@ -1,4 +1,85 @@
-let scene, camera, renderer;
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Duck Arsenal 3D</title>
+  <link rel="stylesheet" href="style.css">
+  <style>
+    body {
+      margin: 0;
+      overflow: hidden;
+      background: #111;
+      color: white;
+      font-family: Arial;
+    }
+    #menu {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%,-50%);
+      text-align: center;
+    }
+    button {
+      padding: 15px 30px;
+      font-size: 20px;
+      cursor: pointer;
+    }
+    #hud {
+      position: absolute;
+      top: 10px;
+      left: 10px;
+      background: rgba(0,0,0,0.5);
+      padding: 10px;
+      border-radius: 10px;
+    }
+    #crosshair {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      width: 20px;
+      height: 20px;
+      transform: translate(-50%, -50%);
+    }
+    #crosshair::before,
+    #crosshair::after {
+      content: '';
+      position: absolute;
+      background: white;
+    }
+    #crosshair::before {
+      width: 2px;
+      height: 20px;
+      left: 9px;
+    }
+    #crosshair::after {
+      width: 20px;
+      height: 2px;
+      top: 9px;
+    }
+  </style>
+</head>
+<body>
+
+<div id="menu">
+  <h1>🦆 Duck Arsenal 3D</h1>
+  <button id="startBtn">START</button>
+</div>
+
+<div id="hud" style="display:none;">
+  <p>Health: <span id="hp">100</span></p>
+  <p>Kills: <span id="kills">0</span></p>
+  <p>Level: <span id="level">1</span></p>
+</div>
+
+<div id="crosshair"></div>
+
+<!-- Three.js -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+
+<!-- Game script -->
+<script>
+
 let player, bullets = [], enemies = [];
 let keys = {};
 
@@ -329,3 +410,7 @@ function animate() {
   update();
   renderer.render(scene, camera);
 }
+</script>
+
+</body>
+</html>let scene, camera, renderer;
