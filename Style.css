@@ -1,16 +1,18 @@
+/* Reset and general styles */
 body {
   margin: 0;
   overflow: hidden;
   background: #111;
   color: white;
-  font-family: Arial;
+  font-family: Arial, sans-serif;
 }
 
+/* Main menu */
 #menu {
   position: absolute;
   top: 50%;
   left: 50%;
-  transform: translate(-50%,-50%);
+  transform: translate(-50%, -50%);
   text-align: center;
 }
 
@@ -20,6 +22,7 @@ button {
   cursor: pointer;
 }
 
+/* HUD */
 #hud {
   position: absolute;
   top: 10px;
@@ -29,6 +32,7 @@ button {
   border-radius: 10px;
 }
 
+/* Crosshair */
 #crosshair {
   position: absolute;
   top: 50%;
@@ -88,7 +92,7 @@ button {
   background: cyan;
 }
 
-/* Ability active glow */
+/* Active ability glow */
 .activeAbility {
   box-shadow: 0 0 10px cyan;
 }
