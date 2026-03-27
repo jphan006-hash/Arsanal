@@ -1,25 +1,46 @@
-/* Reset and general styles */
+/* Reset body */
 body {
   margin: 0;
   overflow: hidden;
-  background: #111;
+  font-family: 'Arial', sans-serif;
+  background: linear-gradient(to bottom, #111, #222);
   color: white;
-  font-family: Arial, sans-serif;
 }
 
-/* Main menu */
+/* Main Menu */
 #menu {
   position: absolute;
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
   text-align: center;
+  background: rgba(0,0,0,0.7);
+  padding: 40px;
+  border-radius: 20px;
+  box-shadow: 0 0 20px cyan;
 }
 
-button {
-  padding: 15px 30px;
-  font-size: 20px;
+#menu h1 {
+  font-size: 48px;
+  margin-bottom: 30px;
+  color: #00ffff;
+  text-shadow: 0 0 10px #00ffff;
+}
+
+#menu button {
+  font-size: 24px;
+  padding: 15px 40px;
+  border: none;
+  border-radius: 10px;
+  background: #00ffff;
+  color: #111;
   cursor: pointer;
+  transition: 0.3s;
+}
+
+#menu button:hover {
+  background: cyan;
+  transform: scale(1.05);
 }
 
 /* HUD */
@@ -28,8 +49,11 @@ button {
   top: 10px;
   left: 10px;
   background: rgba(0,0,0,0.5);
-  padding: 10px;
-  border-radius: 10px;
+  padding: 15px 20px;
+  border-radius: 15px;
+  font-size: 18px;
+  color: white;
+  box-shadow: 0 0 10px cyan;
 }
 
 /* Crosshair */
@@ -61,38 +85,72 @@ button {
   top: 9px;
 }
 
-/* Player panels */
-#playersUI {
+/* Weapon HUD */
+#weaponHUD {
   position: absolute;
   bottom: 10px;
-  left: 10px;
-  display: flex;
-  gap: 10px;
-}
-
-.playerCard {
+  left: 50%;
+  transform: translateX(-50%);
   background: rgba(0,0,0,0.6);
-  padding: 10px;
+  padding: 8px 15px;
   border-radius: 10px;
-  width: 120px;
-  font-size: 12px;
+  color: white;
+  font-size: 18px;
+  box-shadow: 0 0 10px cyan;
 }
 
-.abilityBar {
-  height: 8px;
+/* Ability Bar */
+#abilityBar {
+  position: absolute;
+  bottom: 60px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 220px;
+  height: 20px;
   background: #444;
-  margin-top: 5px;
-  border-radius: 5px;
+  border-radius: 10px;
   overflow: hidden;
+  box-shadow: 0 0 5px cyan inset;
 }
 
-.abilityFill {
+#abilityBar .fill {
   height: 100%;
   width: 100%;
   background: cyan;
+  border-radius: 10px;
+  transition: width 0.2s;
 }
 
-/* Active ability glow */
-.activeAbility {
+/* Leaderboard */
+#leaderboard {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  background: rgba(0,0,0,0.6);
+  padding: 15px 20px;
+  border-radius: 15px;
+  color: white;
+  font-size: 16px;
+  box-shadow: 0 0 10px cyan;
+}
+
+#leaderboard b {
+  display: block;
+  text-align: center;
+  font-size: 18px;
+  margin-bottom: 10px;
+  color: cyan;
+}
+
+/* Player indicator */
+.playerCard {
+  background: rgba(0,0,0,0.6);
+  padding: 8px;
+  border-radius: 10px;
+  font-size: 14px;
+  margin-bottom: 5px;
+}
+
+.playerCard.activeAbility {
   box-shadow: 0 0 10px cyan;
 }
