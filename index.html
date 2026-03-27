@@ -1,107 +1,29 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
-    <meta charset="UTF-8">
-    <title>Duck Arsenal 3D</title>
-    <style>
-        body { margin: 0; overflow: hidden; font-family: 'Arial', sans-serif; }
-        canvas { display: block; }
-        #ui, #startScreen { position: absolute; top: 0; left: 0; width: 100%; height: 100%; }
-        #startScreen { background: rgba(0,0,0,0.8); color: white; display: flex; flex-direction: column; justify-content: center; align-items: center; z-index: 100; }
-        button { padding: 20px 40px; font-size: 24px; cursor: pointer; background: #FFD700; border: none; border-radius: 10px; }
-        #hud { position: absolute; top: 10px; left: 10px; color: white; pointer-events: none; display: none; }
-        .boss-health { width: 300px; height: 20px; background: red; position: absolute; top: 10px; left: 50%; transform: translateX(-50%); display: none; }
-    </style>
+  <title>Duck Arsenal 3D</title>
+  <link rel="stylesheet" href="style.css">
 </head>
 <body>
-    <div id="startScreen">
-        <h1>DUCK ARSENAL 3D</h1>
-        <div style="font-size: 100px;">🦆</div>
-        <button onclick="startGame()">START GAME</button>
-    </div>
-    <div id="hud">
-        <p>Level: <span id="level">1</span>/80</p>
-        <p>Health: <span id="health">100</span></p>
-    </div>
-    <div id="bossBar" class="boss-health"></div>
-    <canvas id="gameCanvas"></canvas>
 
-    <script src="https://cloudflare.com"></script>
-    <script>
-        let scene, camera, renderer, player, enemies = [];
-        let isStarted = false;
-        let health = 100;
-        let level = 1;
+<div id="menu">
+  <h1>🦆 Duck Arsenal 3D</h1>
+  <button id="startBtn">START</button>
+</div>
 
-        function startGame() {
-            document.getElementById('startScreen').style.display = 'none';
-            document.getElementById('hud').style.display = 'block';
-            isStarted = true;
-            init3D();
-            animate();
-        }
+<div id="hud" style="display:none;">
+  <p>Health: <span id="hp">100</span></p>
+  <p>Kills: <span id="kills">0</span></p>
+  <p>Level: <span id="level">1</span></p>
+</div>
 
-        function init3D() {
-            scene = new THREE.Scene();
-            scene.background = new THREE.Color(0x87CEEB);
-            camera = new THREE.PerspectiveCamera(75, window.innerWidth/window.innerHeight, 0.1, 1000);
-            renderer = new THREE.WebGLRenderer({canvas: document.getElementById('gameCanvas')});
-            renderer.setSize(window.innerWidth, window.innerHeight);
+<div id="crosshair"></div>
 
-            // Ground
-            const ground = new THREE.Mesh(
-                new THREE.PlaneGeometry(100, 100),
-                new THREE.MeshBasicMaterial({color: 0x228B22})
-            );
-            ground.rotation.x = -Math.PI / 2;
-            scene.add(ground);
+<!-- Three.js -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
 
-            // Player Avatar (Simple Yellow Duck)
-            const geometry = new THREE.BoxGeometry(1, 1, 1);
-            const material = new THREE.MeshBasicMaterial({color: 0xFFD700});
-            player = new THREE.Mesh(geometry, material);
-            player.position.y = 0.5;
-            scene.add(player);
+<!-- Game -->
+<script src="game.js"></script>
 
-            camera.position.z = 5;
-            camera.position.y = 2;
-        }
-
-        function spawnEnemy() {
-            const geo = new THREE.BoxGeometry(1, 1, 1);
-            const mat = new THREE.MeshBasicMaterial({color: 0xFF4500});
-            const enemy = new THREE.Mesh(geo, mat);
-            enemy.position.set(Math.random()*20-10, 0.5, Math.random()*20-10);
-            enemy.health = (level >= 80) ? 10000 : 20; // 10k Health for King Duck
-            if(level >= 80) {
-                enemy.scale.set(3,3,3); // Big Boss
-                document.getElementById('bossBar').style.display = 'block';
-            }
-            scene.add(enemy);
-            enemies.push(enemy);
-        }
-
-        function animate() {
-            if (!isStarted) return;
-            requestAnimationFrame(animate);
-            
-            // Basic Enemy Movement & Damage
-            enemies.forEach(e => {
-                e.position.x += (player.position.x - e.position.x) * 0.01;
-                e.position.z += (player.position.z - e.position.z) * 0.01;
-                
-                // Damage player
-                if(e.position.distanceTo(player.position) < 1) {
-                    health -= 0.1; // Rapid damage
-                    document.getElementById('health').innerText = Math.floor(health);
-                }
-            });
-
-            renderer.render(scene, camera);
-        }
-
-        // Add 80 levels logic, Multiplayer socket emission, etc.
-        // This requires a back-end server.
-    </script>
 </body>
 </html>
