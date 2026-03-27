@@ -68,3 +68,47 @@ function spawnBullet(xSpread, zSpeed, damage){
   scene.add(bullet);
   bullets.push(bullet);
 }
+
+
+// Sky color
+scene.background = new THREE.Color(0x87ceeb); // light blue sky
+
+// Grass ground
+const groundGeo = new THREE.PlaneGeometry(200, 200);
+const groundMat = new THREE.MeshStandardMaterial({ color: 0x228B22 }); // green
+const ground = new THREE.Mesh(groundGeo, groundMat);
+
+ground.rotation.x = -Math.PI / 2; // make it flat
+ground.position.y = -1;
+scene.add(ground);
+
+// Lake (blue area)
+const lakeGeo = new THREE.CircleGeometry(10, 32);
+const lakeMat = new THREE.MeshStandardMaterial({ 
+  color: 0x1e90ff,
+  transparent: true,
+  opacity: 0.8
+});
+
+const lake = new THREE.Mesh(lakeGeo, lakeMat);
+lake.rotation.x = -Math.PI / 2;
+lake.position.set(0, -0.9, -10); // slightly above ground
+scene.add(lake);
+
+if(typeof lake !== "undefined"){
+  lake.rotation.z += 0.001; // subtle movement
+}
+
+for(let i=0;i<50;i++){
+  let geo = new THREE.BoxGeometry(1, Math.random()*2 + 1, 1);
+  let mat = new THREE.MeshStandardMaterial({color: 0x2ecc71});
+  let grass = new THREE.Mesh(geo, mat);
+
+  grass.position.set(
+    Math.random()*100 - 50,
+    0,
+    Math.random()*100 - 50
+  );
+
+  scene.add(grass);
+}
