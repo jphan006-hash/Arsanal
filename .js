@@ -1,3 +1,4 @@
+let players = [4];
 let scene, camera, renderer;
 let player, bullets = [], enemies = [];
 let keys = {};
