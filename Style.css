@@ -56,3 +56,39 @@ button {
   height: 2px;
   top: 9px;
 }
+
+/* Player panels */
+#playersUI {
+  position: absolute;
+  bottom: 10px;
+  left: 10px;
+  display: flex;
+  gap: 10px;
+}
+
+.playerCard {
+  background: rgba(0,0,0,0.6);
+  padding: 10px;
+  border-radius: 10px;
+  width: 120px;
+  font-size: 12px;
+}
+
+.abilityBar {
+  height: 8px;
+  background: #444;
+  margin-top: 5px;
+  border-radius: 5px;
+  overflow: hidden;
+}
+
+.abilityFill {
+  height: 100%;
+  width: 100%;
+  background: cyan;
+}
+
+/* Ability active glow */
+.activeAbility {
+  box-shadow: 0 0 10px cyan;
+}
