@@ -88,13 +88,13 @@ function addWeapon(){
 }
 
 function shoot(){
-  if(currentWeapon === 0) spawnBullet(0,-1,10);
+  let user = players.find(p=>p.isUser);
 
-  if(currentWeapon === 1){
-    for(let i=-2;i<=2;i++) spawnBullet(i*0.1,-1,6);
+  let shots = user.rapid ? 3 : 1;
+
+  for(let i=0;i<shots;i++){
+    spawnBullet((Math.random()-0.5)*0.2,-1,10);
   }
-
-  if(currentWeapon === 2) spawnBullet(0,-2,20);
 }
 
 function spawnBullet(x,z,damage){
